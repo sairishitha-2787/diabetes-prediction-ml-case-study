@@ -1,0 +1,102 @@
+========================================================================
+  COMPREHENSIVE MODEL EVALUATION REPORT
+  Generated : 2026-02-20 19:38:22
+========================================================================
+
+1. EVALUATION SUMMARY
+----------------------------------------
+  Test set          : 154 samples (100 non-diabetic | 54 diabetic)
+  Metrics           : Accuracy, Precision, Recall, Specificity,
+                       F1-Score, AUC-ROC, TP, TN, FP, FN
+  Cross-validation  : 5-fold Stratified (on pre-SMOTE training data)
+  Pipeline per fold : MinMaxScaler + Classifier
+
+
+2. COMPLETE RESULTS TABLE (sorted by AUC-ROC)
+------------------------------------------------------------------------
+  Model                    Acc%  Prec%   Rec%  Spec%    F1%     AUC  TP  TN  FP  FN
+  --------------------------------------------------------------------
+  Neural Network         79.22% 66.18% 83.33% 77.00% 73.77%  0.8315  45  77  23   9
+  Random Forest          73.38% 60.32% 70.37% 75.00% 64.96%  0.8272  38  75  25  16
+  SVM                    75.32% 61.76% 77.78% 74.00% 68.85%  0.8176  42  74  26  12
+  Logistic Regression    72.73% 59.68% 68.52% 75.00% 63.79%  0.8126  37  75  25  17
+  Decision Tree          68.83% 54.69% 64.81% 71.00% 59.32%  0.7771  35  71  29  19
+  --------------------------------------------------------------------
+
+
+3. MODEL RANKINGS (by AUC-ROC)
+----------------------------------------
+  1st (Gold)      Neural Network          AUC = 0.8315
+  2nd (Silver)    Random Forest           AUC = 0.8272
+  3rd (Bronze)    SVM                     AUC = 0.8176
+  4th             Logistic Regression     AUC = 0.8126
+  5th             Decision Tree           AUC = 0.7771
+
+
+4. BEST MODEL ANALYSIS  ->  Neural Network
+----------------------------------------
+
+  Key Strengths:
+    Highest AUC-ROC : 0.8315
+    Accuracy        : 79.22%
+    Recall          : 83.33%  (critical for medical screening)
+    F1-Score        : 0.7377
+
+  Confusion Matrix:
+    True Positives (TP)  :  45  correctly identified diabetics
+    True Negatives (TN)  :  77  correctly identified non-diabetics
+    False Positives (FP) :  23  false alarms (unnecessary follow-up)
+    False Negatives (FN) :   9  MISSED diabetics  <-- most critical
+
+  Clinical Interpretation:
+    False Negative Rate : 16.7%
+    This means 9 out of 54 actual diabetics were missed.
+    Interpretation: Low FN rate — acceptable for initial screening; missed cases should be caught on follow-up testing.
+
+
+5. CROSS-VALIDATION STABILITY (5-fold)
+----------------------------------------
+
+  Model                    CV Mean Acc    Std Dev
+  ----------------------------------------------
+  Neural Network               0.7931  +/-0.0223
+  Logistic Regression          0.7833  +/-0.0202
+  Random Forest                0.7785  +/-0.0324
+  SVM                          0.7752  +/-0.0373
+  Decision Tree                0.7165  +/-0.0498
+
+  Most  stable : Logistic Regression  (std = 0.0202)
+  Least stable : Decision Tree  (std = 0.0498)
+
+
+6. KEY FINDINGS
+----------------------------------------
+  Best overall model     (AUC-ROC) : Neural Network
+  Best recall model      (clinical): Neural Network
+  Most stable model      (CV std)  : Logistic Regression
+  Fastest model          (train)   : Decision Tree  (0.0025s)
+
+  AUC-ROC range : 0.7771 to 0.8315  (+6.99% improvement from worst to best)
+
+
+7. RECOMMENDATION
+----------------------------------------
+
+  Primary Model : Neural Network
+
+  Justification:
+    (a) Best overall AUC-ROC (0.8315) — strongest ranking quality across all thresholds
+    (b) Highest Recall (83.33%) — captures the most diabetics, minimising missed diagnoses
+    (c) Preprocessed with median imputation — experimentally verified best imputation strategy for this dataset
+    (d) CV stability confirms generalisation (std = 0.0223)
+
+  Secondary consideration:
+    If stability is prioritised, Logistic Regression has the lowest CV std (0.0202)
+
+  For production deployment, wrap the model in a Pipeline with
+  median imputation + MinMaxScaler to ensure consistent inference.
+
+
+========================================================================
+  END OF REPORT
+========================================================================

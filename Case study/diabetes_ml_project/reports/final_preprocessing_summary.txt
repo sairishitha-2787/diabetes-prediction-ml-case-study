@@ -1,0 +1,32 @@
+==============================================================
+  FINAL PREPROCESSING SUMMARY
+  Generated : 2026-02-20 19:33:25
+==============================================================
+
+  METHOD CHOSEN
+  -------------
+  Imputation   : Median
+  Justification: Experiment showed +1.56% AUC-ROC over worst method
+                 (median best for skewed/outlier-heavy features like
+                  Insulin and SkinThickness)
+
+  DATASET SPLIT
+  -------------
+  Total samples          : 768
+  Training (before ROS)  : 614  [400 non-diab | 214 diab]
+  Training (after  ROS)  : 800  [400 non-diab | 400 diab]
+  Test set               : 154  [100 non-diab | 54 diab]
+
+  FEATURES
+  --------
+  Original (8) : Pregnancies, Glucose, BloodPressure, SkinThickness,
+                  Insulin, BMI, DiabetesPedigreeFunction, Age
+  Engineered(2): Glucose_BMI_Interaction, Age_Group
+  Total        : 10
+
+  SCALING
+  -------
+  Method : MinMaxScaler  (range [0, 1])
+  Fit on : balanced training set only (no leakage)
+
+==============================================================

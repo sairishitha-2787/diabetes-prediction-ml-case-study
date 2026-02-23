@@ -1,0 +1,77 @@
+========================================================================
+  DIABETES ML PREDICTION - QUICK REFERENCE CARD
+  Generated : 2026-02-21 10:48:59
+========================================================================
+
+  BEST MODEL : Neural Network (MLP)
+  --------------------------------------------------------------------
+  AUC-ROC    : 0.8315
+  Accuracy   : 79.22%
+  Recall     : 83.33%  (missed only 9/54 diabetics at default threshold)
+  F1-Score   : 0.7377
+
+  OPTIMAL THRESHOLD : 0.30  (NOT default 0.50!)
+  --------------------------------------------------------------------
+  Expected ROI       : 657.7%
+  Net Benefit        : $1.49M per 154 patients
+  Recall at 0.30     : 90.7%  (4 more diabetics caught vs default)
+  Improvement        : +$304.9K vs default threshold
+
+  TOP 3 PREDICTIVE FEATURES
+  --------------------------------------------------------------------
+  1. Glucose x BMI Interaction : 0.986  <<< ENGINEERED (best feature!)
+  2. Glucose                   : 0.648
+  3. BMI                       : 0.345
+
+  PREPROCESSING PIPELINE (in order)
+  --------------------------------------------------------------------
+  Step 1 : Replace biological zeros with NaN
+           (Glucose, BloodPressure, SkinThickness, Insulin, BMI)
+  Step 2 : Median imputation  (experimentally validated best method)
+  Step 3 : Engineer features  (Glucose x BMI, Age_Group)
+  Step 4 : Stratified 80/20 train-test split
+  Step 5 : Random oversampling on training set only  (50-50 balance)
+  Step 6 : MinMaxScaler  (fit on balanced training set only)
+
+  ECONOMIC IMPACT SUMMARY
+  --------------------------------------------------------------------
+  Per 154 test patients (optimal threshold):
+    Net Benefit   : $1,488,700
+    ROI           : 657.7%
+    Cost per TP   : $50.85
+
+  Scaled to 10,000 annual screenings:
+    Net Benefit   : $76,870,000  ($76.87 MILLION)
+
+  ALL 5 MODEL RANKINGS
+  --------------------------------------------------------------------
+  Rank  Model                  AUC-ROC  Accuracy  Recall   F1
+  1     Neural Network (MLP)   0.8315   79.22%    83.33%   0.7377
+  2     Random Forest          0.8272   73.38%    70.37%   0.6944
+  3     SVM (RBF)              0.8176   75.32%    72.22%   0.7027
+  4     Logistic Regression    0.8126   74.03%    72.22%   0.7027
+  5     Decision Tree          0.7771   73.38%    64.81%   0.6471
+
+  DEPLOYMENT CHECKLIST
+  --------------------------------------------------------------------
+  [OK] Model  : Neural Network  (sklearn MLPClassifier)
+  [OK] Config : hidden_layer_sizes=(64,32), activation='tanh', solver='adam'
+  [OK] Threshold : 0.30  (use predict_proba[:,1] >= 0.30)
+  [OK] Scaler : MinMaxScaler  (fit on balanced training data)
+  [OK] Monitor: Recall >= 80%,  FN rate < 20%
+  [OK] Retrain: Quarterly, or immediately if FN rate > 20%
+
+  KEY INSIGHT REMINDERS
+  --------------------------------------------------------------------
+  - Hyperparameter tuning HURT Random Forest recall (-10.53%)
+    -> Always validate tuned models on holdout test set
+  - Glucose x BMI interaction ranked #1, outperforming raw features
+    -> Feature engineering is worth the effort
+  - FN costs 142x more than FP in this clinical context
+    -> Optimise for recall, not precision or accuracy
+  - Median imputation won over Mean and Mode (+1.56% AUC)
+    -> Validate preprocessing choices empirically
+
+========================================================================
+  READY FOR DEPLOYMENT
+========================================================================

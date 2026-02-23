@@ -1,0 +1,132 @@
+========================================================================
+  CLINICAL COST-BENEFIT ANALYSIS REPORT
+  Generated : 2026-02-21 10:42:09
+========================================================================
+
+1. COST ASSUMPTIONS (Clinical Economics)
+--------------------------------------------------
+
+  False Negative (Missed Diabetic): $42,500
+  - Delayed diagnosis leads to unmanaged hyperglycaemia for 2-3 years.
+  - Complications include retinopathy, nephropathy, neuropathy, and
+    cardiovascular disease, each requiring expensive specialist care.
+  - Literature estimates: $25,000-$50,000 per missed case (ADA 2023).
+
+  False Positive (Unnecessary Follow-up): $300
+  - HbA1c confirmatory test: $50
+  - Follow-up physician appointment: $150
+  - Patient time, transport, and anxiety burden: $100
+
+  True Positive (Early Detection): $35,000 saved
+  - Early lifestyle intervention and medication prevents complications.
+  - Prevents $30,000-$40,000 in long-term treatment costs per patient.
+  - Improves quality-adjusted life years (QALYs).
+
+  Prediction cost: $12 per patient
+  - Model inference cost: $2
+  - Data collection (blood tests, forms): $10
+
+2. MODEL COST COMPARISON  (154 test patients)
+------------------------------------------------------------------------
+  Model                     TP$K    FN$K   FP$K  Pred$K    Net$K    ROI% Rank
+  ----------------------------------------------------------------------
+  Neural Network         1575.0K  382.5K   6.9K    1.8K  1183.8K  302.6%  1
+  SVM                    1470.0K  510.0K   7.8K    1.8K   950.4K  182.9%  2
+  Random Forest          1330.0K  680.0K   7.5K    1.8K   640.7K   92.9%  3
+  Logistic Regression    1295.0K  722.5K   7.5K    1.8K   563.2K   76.9%  4
+  Decision Tree          1225.0K  807.5K   8.7K    1.8K   407.0K   49.7%  5
+  ----------------------------------------------------------------------
+
+
+3. BEST MODEL ECONOMIC ANALYSIS  ->  Neural Network
+--------------------------------------------------
+
+  Test Set Results (154 patients screened, 54 actual diabetics):
+  - True  Positives:  45  -> Value:  $ 1,575,000
+  - False Negatives:   9  -> Cost: -$   382,500
+  - False Positives:  23  -> Cost: -$     6,900
+  - Prediction cost: 154 patients -> Cost: -$     1,848
+                                                --------
+  - Net Benefit:              $ 1,183,752
+  - ROI:                          302.6%
+  - Cost per correct detection: $    194
+
+  Per-1,000-Patient Projection:
+  - Expected diabetics detected: ~292 (of ~351 expected diabetics)
+  - Expected missed cases:        ~58
+  - Expected false alarms:        ~149
+  - Net benefit per 1,000 pts:    $ 7,686,701  ($7686.7K)
+
+
+4. THRESHOLD OPTIMIZATION RESULTS  (Neural Network)
+--------------------------------------------------
+
+  Default Threshold (0.50):
+  - Net Benefit  : $ 1,183,752  ($1183.8K)
+  - Recall       : 83.33%
+  - Precision    : 66.18%
+  - TP=45, FN=9, FP=23
+
+  Optimal Threshold (0.3):
+  - Net Benefit  : $ 1,488,652  ($1488.7K)
+  - Improvement  : +$304,900
+  - Recall       : 90.74%
+  - Precision    : 55.06%
+  - TP=49, FN=5, FP=40
+
+  Interpretation: At threshold 0.3, the model catches more diabetics
+  (higher recall). Although this increases false positives, the asymmetric
+  cost structure means each extra true positive saves $35,000 while each
+  extra false positive costs only $300 — so a lower threshold is justified
+  for high-recall screening tasks like diabetes detection.
+
+
+5. SENSITIVITY ANALYSIS  (varying FN cost assumption)
+------------------------------------------------------------
+
+  FN Cost     | Best Model         | Net Benefit (Neural Net)
+  --------------------------------------------------------
+  $ 20,000    | Neural Network      | $  1386.3K
+  $ 42,500    | Neural Network      | $  1183.8K
+  $ 60,000    | Neural Network      | $  1026.3K
+
+  Interpretation:
+  - At lower FN costs ($20,000), the ranking of models may shift because
+    the penalty for missing a diabetic is reduced.
+  - At higher FN costs ($60,000), maximising Recall becomes even more
+    critical — Neural Network's 83.3% recall provides the greatest
+    economic value.
+  - The model choice is robust to FN cost assumptions in the range
+    $20K-$60K: Neural Network remains either 1st or competitive.
+
+
+6. DEPLOYMENT RECOMMENDATION
+--------------------------------------------------
+
+  Primary Model     : Neural Network
+  Recommended Threshold: 0.3  (optimised for net benefit)
+  Expected ROI      : 302.6%  (on 154-patient test cohort)
+
+  Per-Patient Economics:
+  - Screening cost           : $12/patient
+  - Average benefit/patient  : $7,687
+  - Break-even detection rate: 6.1% of positives must be TP
+
+  Scale-Up Projection (10,000 patients screened annually):
+  - Total screening cost     : $   120,000
+  - Expected net benefit     : $76,867,013  ($76.87M)
+  - Payback period           : <1 month (positive from day 1)
+
+7. CLINICAL IMPLEMENTATION NOTES")
+  - Use threshold 0.50 for general population screening (balanced sensitivity)
+  - Use threshold 0.40 for high-risk populations (older, obese, family history)
+    -> Higher recall catches borderline cases at cost of more follow-up tests
+  - Use threshold 0.60 only when follow-up capacity is limited
+    -> Reduces false alarms but risks missing moderate-risk individuals
+  - Retrain model every 6-12 months as population demographics shift
+  - Combine model output with physician judgment for borderline cases (0.35-0.65)
+
+
+========================================================================
+  END OF COST-BENEFIT REPORT
+========================================================================

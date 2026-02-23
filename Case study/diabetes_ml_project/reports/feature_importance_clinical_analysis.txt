@@ -1,0 +1,144 @@
+========================================================================
+  FEATURE IMPORTANCE — CLINICAL ANALYSIS REPORT
+  Generated : 2026-02-20 19:46:13
+========================================================================
+
+1. OVERALL FEATURE RANKING
+------------------------------------------------------------------------
+  Rank  Feature                         Avg     LR     DT     RF  Clinical Significance
+  ----------------------------------------------------------------------
+  1     Glucose_BMI_Interaction       0.986  0.958  1.000  1.000  Multiplicative risk: hyperglycaemia combined with obesi...
+        Full note: Multiplicative risk: hyperglycaemia combined with obesity creates compounding metabolic stress; captures joint effect of the top two individual features.
+  2     Glucose                       0.648  1.000  0.191  0.752  Primary WHO diagnostic criterion; fasting plasma glucos...
+        Full note: Primary WHO diagnostic criterion; fasting plasma glucose >=126 mg/dL confirms diabetes; directly reflects insulin-mediated glucose uptake failure.
+  3     BMI                           0.345  0.551  0.083  0.400  Obesity (BMI>=30) drives insulin resistance via adipoki...
+        Full note: Obesity (BMI>=30) drives insulin resistance via adipokine dysregulation and excess free fatty acids; strongest modifiable risk factor for Type 2 diabetes.
+  4     Pregnancies                   0.251  0.469  0.114  0.171  History of gestational diabetes confers 7x higher lifet...
+        Full note: History of gestational diabetes confers 7x higher lifetime Type 2 risk; each pregnancy stresses pancreatic beta-cell reserve.
+  5     DiabetesPedigreeFunction      0.237  0.382  0.029  0.301  Encodes genetic predisposition and family history of di...
+        Full note: Encodes genetic predisposition and family history of diabetes; heritability of Type 2 diabetes estimated at 30–70%.
+  6     Age                           0.161  0.018  0.104  0.360  Insulin sensitivity declines with age due to mitochondr...
+        Full note: Insulin sensitivity declines with age due to mitochondrial dysfunction and reduced beta-cell mass; prevalence roughly doubles every decade after age 40.
+  7     Age_Group                     0.146  0.291  0.000  0.149  Categorical age buckets capture threshold effects in di...
+        Full note: Categorical age buckets capture threshold effects in diabetes risk (e.g. post-menopausal surge); may encode non-linearities missed by continuous Age alone.
+  8     SkinThickness                 0.137  0.246  0.000  0.164  Triceps skinfold proxy for subcutaneous fat; central ad...
+        Full note: Triceps skinfold proxy for subcutaneous fat; central adiposity predicts insulin resistance even in individuals with normal BMI.
+  9     Insulin                       0.113  0.078  0.060  0.202  Direct measure of pancreatic beta-cell secretory functi...
+        Full note: Direct measure of pancreatic beta-cell secretory function; elevated fasting insulin indicates resistance, very low values suggest beta-cell failure.
+  10    BloodPressure                 0.073  0.077  0.000  0.142  Hypertension and Type 2 diabetes share pathophysiology ...
+        Full note: Hypertension and Type 2 diabetes share pathophysiology (insulin resistance, endothelial dysfunction); core component of metabolic syndrome cluster.
+  ----------------------------------------------------------------------
+
+
+2. MODEL AGREEMENT ANALYSIS
+----------------------------------------
+
+  Features where ALL models place in top-4:
+    - Glucose_BMI_Interaction
+    - Glucose
+
+  Features with HIGH DISAGREEMENT (variance > 0.0358):
+    - Glucose                      LR rank= 1, DT rank= 2, RF rank= 2  (variance=0.1716)
+      Reason: Different model assumptions lead to varying sensitivity to this feature
+    - BMI                          LR rank= 3, DT rank= 5, RF rank= 3  (variance=0.0570)
+      Reason: Different model assumptions lead to varying sensitivity to this feature
+    - Pregnancies                  LR rank= 4, DT rank= 3, RF rank= 7  (variance=0.0364)
+      Reason: Non-linear relationship; trees exploit count-based thresholds that LR treats linearly
+
+
+3. SURPRISING FINDINGS
+----------------------------------------
+
+  Unexpectedly HIGH importance: Glucose_BMI_Interaction (rank 1)
+    Why surprising: As a derived feature (Glucose x BMI), it might have
+    been expected to be redundant with its parents. Instead it ranks highly,
+    suggesting the multiplicative interaction captures synergistic risk
+    not fully encoded by either feature alone.
+
+
+4. ENGINEERED FEATURES PERFORMANCE
+----------------------------------------
+
+  Glucose_BMI_Interaction:
+    Average importance : 0.9859  (rank 1 out of 10)
+    Individual Glucose : 0.6480  (rank 2)
+    Analysis: The interaction term captures meaningful additive signal.
+    Keeping it in the feature set is justified — it contributes beyond
+    what the individual Glucose feature alone provides.
+
+  Age_Group:
+    Average importance : 0.1465  (rank 7 out of 10)
+    Continuous Age     : 0.1606  (rank 6)
+    Analysis: Continuous Age outperforms the categorical Age_Group.
+    Binning introduces information loss; the linear/threshold splits in
+    tree models already discover the relevant age thresholds naturally.
+
+
+5. SAMPLE PREDICTION ANALYSIS  (Random Forest)
+----------------------------------------
+
+  Three representative test samples are analysed to show how global
+  feature importances combine with individual feature values.
+
+  Sample A: TRUE POSITIVE  (Correctly identified diabetic)
+    Prediction : Diabetic (94.0% probability diabetic)
+    Actual     : Diabetic
+
+    Top 3 Contributing Features (scaled_value x RF_importance):
+    1. Glucose_BMI_Interaction       value= 7455.60  RF_imp=0.2746  [Non-Diab avg=3418.0 | Diab avg=5070.7]
+    2. Glucose                       value=  171.00  RF_imp=0.2066  [Non-Diab avg=110.4 | Diab avg=142.7]
+    3. BMI                           value=   43.60  RF_imp=0.1099  [Non-Diab avg=30.8 | Diab avg=35.5]
+
+    Clinical Interpretation:
+    High-confidence prediction (94.0%). Glucose and BMI both
+    exceed diabetic thresholds. Multiple co-occurring risk factors
+    create a clear diabetic signature that all features reinforce.
+
+  Sample B: TRUE NEGATIVE  (Correctly identified non-diabetic)
+    Prediction : Non-Diabetic (0.2% probability diabetic)
+    Actual     : Non-Diabetic
+
+    Top 3 Contributing Features (scaled_value x RF_importance):
+    1. Glucose                       value=   89.00  RF_imp=0.2066  [Non-Diab avg=110.4 | Diab avg=142.7]
+    2. Glucose_BMI_Interaction       value= 2500.90  RF_imp=0.2746  [Non-Diab avg=3418.0 | Diab avg=5070.7]
+    3. BMI                           value=   28.10  RF_imp=0.1099  [Non-Diab avg=30.8 | Diab avg=35.5]
+
+    Clinical Interpretation:
+    Very low probability (0.2%). Feature values are
+    consistently within non-diabetic ranges. Prediction is
+    robust — model has high confidence this is a healthy patient.
+
+  Sample C: FALSE NEGATIVE (MISSED diabetic — most concerning!)
+    Prediction : Non-Diabetic (47.6% probability diabetic)
+    Actual     : Diabetic
+
+    Top 3 Contributing Features (scaled_value x RF_importance):
+    1. Glucose                       value=  107.00  RF_imp=0.2066  [Non-Diab avg=110.4 | Diab avg=142.7]
+    2. Glucose_BMI_Interaction       value= 3167.20  RF_imp=0.2746  [Non-Diab avg=3418.0 | Diab avg=5070.7]
+    3. BMI                           value=   29.60  RF_imp=0.1099  [Non-Diab avg=30.8 | Diab avg=35.5]
+
+    Clinical Interpretation: *** HIGH RISK — MISSED CASE ***
+    Probability 47.6% — model predicted non-diabetic
+    but patient IS diabetic. Feature values may be borderline.
+    Clinical follow-up with HbA1c testing is strongly advised.
+
+
+6. RECOMMENDATIONS FOR FEATURE SELECTION
+----------------------------------------
+
+  Minimum viable feature set:
+    Top 6 features account for ~84.8% of total aggregate importance.
+    Recommended core set: Glucose_BMI_Interaction, Glucose, BMI, Pregnancies, DiabetesPedigreeFunction, Age
+
+  Features that COULD be removed (average importance < 0.05):
+    - All features exceed the 0.05 threshold; none are trivially removable.
+
+  Critical features (never remove):
+    - Glucose_BMI_Interaction       avg_imp=0.9859
+    - Glucose                       avg_imp=0.6480
+    - BMI                           avg_imp=0.3448
+
+
+========================================================================
+  END OF CLINICAL ANALYSIS REPORT
+========================================================================

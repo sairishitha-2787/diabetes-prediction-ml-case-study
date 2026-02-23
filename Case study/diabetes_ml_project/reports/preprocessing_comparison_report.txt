@@ -1,0 +1,117 @@
+========================================================================
+  PREPROCESSING COMPARISON REPORT — PIMA DIABETES DATASET
+  Generated: 2026-02-20 19:28:30
+========================================================================
+
+1. EXPERIMENT OVERVIEW
+----------------------------------------
+  Methods tested  : Mean, Median, Mode (most_frequent)
+  Dataset         : PIMA Indians Diabetes (768 samples, 8 features)
+  Test protocol   : 80/20 stratified split, Random Forest (50 trees)
+  Class balancing : RandomOverSampler on training set only
+  Scaling         : MinMaxScaler (fit on train, applied to test)
+  Feature eng.    : Glucose_BMI_Interaction, Age_Group added
+  Imputation cols : Glucose, BloodPressure, SkinThickness, Insulin, BMI
+
+
+2. RESULTS SUMMARY TABLE
+------------------------------------------------------------------------
+  Method     |  Accuracy | Precision |    Recall |  F1-Score |   AUC-ROC |  Rank
+  --------------------------------------------------------------------
+  Median     |    74.03% |    62.96% |    62.96% |    62.96% |    0.8323 |     1
+  Mode       |    72.73% |    60.71% |    62.96% |    61.82% |    0.8195 |     2
+  Mean       |    70.78% |    58.82% |    55.56% |    57.14% |    0.8231 |     3
+  --------------------------------------------------------------------
+
+
+3. DETAILED ANALYSIS — PER METRIC
+----------------------------------------
+
+  Accuracy:
+    Winner     : Median    score = 0.7403
+    Runner-up  : Mode      score = 0.7273
+    Worst      : Mean      score = 0.7078
+    Improvement: 4.59% over worst method
+    NOTE: Mean vs Median differ by >2% — this is a practically significant gap.
+
+  Precision:
+    Winner     : Median    score = 0.6296
+    Runner-up  : Mode      score = 0.6071
+    Worst      : Mean      score = 0.5882
+    Improvement: 7.04% over worst method
+    NOTE: Mean vs Median differ by >2% — this is a practically significant gap.
+
+  Recall:
+    Winner     : Median    score = 0.6296
+    Runner-up  : Mode      score = 0.6296
+    Worst      : Mean      score = 0.5556
+    Improvement: 13.33% over worst method
+    NOTE: Mean vs Median differ by >2% — this is a practically significant gap.
+
+  F1-Score:
+    Winner     : Median    score = 0.6296
+    Runner-up  : Mode      score = 0.6182
+    Worst      : Mean      score = 0.5714
+    Improvement: 10.19% over worst method
+    NOTE: Mean vs Median differ by >2% — this is a practically significant gap.
+
+  AUC-ROC:
+    Winner     : Median    score = 0.8323
+    Runner-up  : Mean      score = 0.8231
+    Worst      : Mode      score = 0.8195
+    Improvement: 1.56% over worst method
+
+
+4. WHY THE WINNER WON
+----------------------------------------
+
+  Winner: Median Imputation
+
+  Explanation:
+    median imputation is the optimal strategy when features are
+    skewed or contain outliers. Insulin (skew>5) and SkinThickness
+    (bimodal) have heavy right tails; the median is unaffected by
+    extreme values and better represents the 'typical' missing
+    observation. Robustness to outliers leads to less noise in
+    imputed values and a cleaner decision boundary for the Random
+    Forest.
+
+  Data characteristics that support this choice:
+    - Insulin: heavy right skew (max=846, mean=79.8), 374 zeros (48.7%)
+    - SkinThickness: 227 zeros (29.6%), bimodal distribution
+    - BMI: moderate skew; 11 zeros (1.4%), small outlier effect
+    - Glucose & BloodPressure: near-normal; few zeros (<5%)
+
+
+5. RECOMMENDATION
+----------------------------------------
+
+  Based on this experiment, Median imputation is recommended
+  for the final model pipeline because:
+    (a) Best overall AUC-ROC: 0.8323
+    (b) Robust to the heavy-tailed Insulin distribution
+    (c) Unaffected by extreme outliers in SkinThickness/Insulin
+    (d) Preserves class-separability better than mean when outliers shift the mean
+
+
+6. IMPACT ON MODEL PERFORMANCE
+----------------------------------------
+
+  Improvement from worst to best method:
+    AUC-ROC: 0.8195  ->  0.8323  (+1.56%)
+
+  This demonstrates that even before choosing a model,
+  the choice of imputation strategy can materially affect
+  classification performance — validating the importance of
+  thoughtful preprocessing in the ML pipeline.
+
+
+7. TIMING SUMMARY
+----------------------------------------
+  Median    : 0.1017 seconds
+  Mode      : 0.1275 seconds
+  Mean      : 1.4169 seconds
+
+========================================================================
+  END OF REPORT
+========================================================================

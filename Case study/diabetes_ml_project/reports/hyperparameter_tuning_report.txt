@@ -1,0 +1,106 @@
+========================================================================
+  HYPERPARAMETER TUNING REPORT — RANDOM FOREST
+  Generated : 2026-02-21 10:26:31
+========================================================================
+
+1. TUNING CONFIGURATION
+----------------------------------------
+  Model            : Random Forest (sklearn)
+  Parameter grid   :
+    n_estimators         : [50, 100, 150, 200]
+    max_depth            : [5, 10, 15, 20]
+    min_samples_leaf     : [1, 5, 10]
+    max_features         : ['sqrt', 'log2']
+  Total combinations: 96
+  Cross-validation : 3-fold  (stratified via RF internal)
+  Scoring metric   : roc_auc
+  Search time      : 18.03 seconds
+
+
+2. OPTIMAL PARAMETERS FOUND
+--------------------------------------------------
+
+  Parameter               Default    Optimal       Change
+  ------------------------------------------------------
+  n_estimators                100        150          +50
+  max_depth                    10         20          +10
+  min_samples_leaf              5          1           -4
+  max_features               sqrt       sqrt    unchanged
+
+  Best CV AUC-ROC (3-fold): 0.9316
+
+
+3. PERFORMANCE IMPROVEMENT ON TEST SET
+-------------------------------------------------------
+
+  Metric         Default RF   Tuned RF   Abs Gain     % Gain
+  --------------------------------------------------------
+  Accuracy           0.7338     0.7273   -0.0065     -0.88%
+  Precision          0.6032     0.6071 +   0.0040 +     0.66%
+  Recall             0.7037     0.6296   -0.0741    -10.53%
+  F1                 0.6496     0.6182   -0.0314     -4.83%
+  AUC-ROC            0.8272     0.8297 +   0.0025 +     0.30%
+
+
+4. PARAMETER IMPACT ANALYSIS
+----------------------------------------
+
+  Rank 1: min_samples_leaf
+    Score range  : 0.8771 to 0.9181
+    Range (delta): 0.04098
+    Interpretation: Acts as a regulariser — forces each terminal node to represent at least N training samples, preventing the model from memorising noise.
+
+  Rank 2: max_depth
+    Score range  : 0.8802 to 0.9008
+    Range (delta): 0.02059
+    Interpretation: Controls model complexity. Too shallow = underfitting; too deep = overfitting. Dataset complexity determines the optimal depth.
+
+  Rank 3: n_estimators
+    Score range  : 0.8939 to 0.8958
+    Range (delta): 0.00181
+    Interpretation: More trees consistently reduce variance up to a saturation point. Beyond ~150, returns diminish as new trees add little uncorrelated signal.
+
+  Rank 4: max_features
+    Score range  : 0.8951 to 0.8951
+    Range (delta): 0.00000
+    Interpretation: Controls correlation between trees. 'sqrt' and 'log2' both reduce correlation; difference is small for 10 features, explaining low sensitivity.
+
+
+5. KEY INSIGHTS
+----------------------------------------
+  - n_estimators: Increasing trees from 50 to 200 improved AUC from 0.8939 to 0.8958 (+0.0018).
+  - max_depth: Optimal depth is 20. Shallow trees (depth=5: 0.8802) underfit; very deep trees add noise without meaningful gain.
+  - min_samples_leaf: Best value = 1. Small values (e.g. 1) risk overfitting individual noisy samples; larger values add too much regularisation.
+  - max_features ('sqrt'): Low sensitivity (range 0.00000) — for 10 features, 'sqrt' (~3) and 'log2' (~3) are nearly identical, so the choice matters little.
+
+
+6. COMPUTATIONAL COST ANALYSIS
+----------------------------------------
+  Default RF training time   : 0.1569s
+  Grid search total time     : 18.03s (96 combinations x 3-fold)
+  Tuned RF training time     : 0.2045s
+  Total tuning investment    : 18.24s
+  AUC improvement            : +0.0025 (+0.30%)
+  Is tuning worth it?        : MARGINAL — gain is small; default params are near-optimal for this dataset size.
+
+
+7. RECOMMENDATION
+----------------------------------------
+
+  Use Tuned Random Forest: OPTIONAL
+  Justification: Marginal AUC gain (+0.0025). Default parameters are already well-tuned for this dataset. Use tuned model only if infrastructure cost is low.
+
+  For production deployment:
+    Recommended parameters:
+      max_depth           : 20
+      max_features        : sqrt
+      min_samples_leaf    : 1
+      n_estimators        : 150
+    Expected AUC-ROC         : 0.8297
+    Retuning frequency       : Every 6-12 months with new patient data
+    Retune if               : Dataset grows >50% or AUC drops >2%
+
+
+========================================================================
+  END OF TUNING REPORT
+========================================================================
