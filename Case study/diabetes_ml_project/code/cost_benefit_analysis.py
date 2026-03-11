@@ -32,6 +32,7 @@ from sklearn.metrics         import (
     f1_score, roc_auc_score, confusion_matrix
 )
 from imblearn.over_sampling  import RandomOverSampler
+from preprocessing           import build_pipeline
 
 warnings.filterwarnings('ignore')
 np.random.seed(42)
@@ -51,32 +52,12 @@ COLUMN_NAMES = [
 ]
 URL = ("https://raw.githubusercontent.com/jbrownlee/Datasets/"
        "master/pima-indians-diabetes.data.csv")
-df = pd.read_csv(URL, names=COLUMN_NAMES)
-
-ZERO_COLS = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
-df[ZERO_COLS] = df[ZERO_COLS].replace(0, np.nan)
-imputer = SimpleImputer(strategy='median')
-df[ZERO_COLS] = imputer.fit_transform(df[ZERO_COLS])
-
-df['Glucose_BMI_Interaction'] = df['Glucose'] * df['BMI']
-df['Age_Group'] = pd.cut(
-    df['Age'], bins=[0, 30, 45, 60, 120], labels=[0, 1, 2, 3]
-).astype(int)
-
-ENG_FEATURES = [c for c in COLUMN_NAMES if c != 'Outcome'] + \
-               ['Glucose_BMI_Interaction', 'Age_Group']
-
-X_all = df[ENG_FEATURES].values
-y_all = df['Outcome'].values
-
-X_train_raw, X_test, y_train_raw, y_test = train_test_split(
-    X_all, y_all, test_size=0.20, random_state=42, stratify=y_all
-)
-ros = RandomOverSampler(random_state=42)
-X_train_bal, y_train_bal = ros.fit_resample(X_train_raw, y_train_raw)
-scaler     = MinMaxScaler()
-X_train_sc = scaler.fit_transform(X_train_bal)
-X_test_sc  = scaler.transform(X_test)
+data        = build_pipeline()
+X_train_sc  = data.X_train_sc
+X_test_sc   = data.X_test_sc
+X_test      = data.X_test_raw
+y_train_bal = data.y_train_res
+y_test      = data.y_test
 
 N_TEST = len(X_test)
 print(f"  Test set: {N_TEST} patients "

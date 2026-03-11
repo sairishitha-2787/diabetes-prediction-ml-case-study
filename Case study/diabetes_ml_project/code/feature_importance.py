@@ -25,6 +25,7 @@ from sklearn.tree            import DecisionTreeClassifier
 from sklearn.ensemble        import RandomForestClassifier
 from sklearn.metrics         import accuracy_score
 from imblearn.over_sampling  import RandomOverSampler
+from preprocessing           import build_pipeline, COLUMN_NAMES, ENG_FEATURES
 
 warnings.filterwarnings('ignore')
 np.random.seed(42)
@@ -44,38 +45,16 @@ COLUMN_NAMES = [
 ]
 URL = ("https://raw.githubusercontent.com/jbrownlee/Datasets/"
        "master/pima-indians-diabetes.data.csv")
-df_raw = pd.read_csv(URL, names=COLUMN_NAMES)
-
-ZERO_COLS = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
-df = df_raw.copy()
-df[ZERO_COLS] = df[ZERO_COLS].replace(0, np.nan)
-
-imp = SimpleImputer(strategy='median')
-df[ZERO_COLS] = imp.fit_transform(df[ZERO_COLS])
-
-df['Glucose_BMI_Interaction'] = df['Glucose'] * df['BMI']
-df['Age_Group'] = pd.cut(
-    df['Age'], bins=[0, 30, 45, 60, 120], labels=[0, 1, 2, 3]
-).astype(int)
-
-ENG_FEATURES = [c for c in COLUMN_NAMES if c != 'Outcome'] + \
-               ['Glucose_BMI_Interaction', 'Age_Group']
-N_FEAT = len(ENG_FEATURES)
-
-X_all = df[ENG_FEATURES].values
-y_all = df['Outcome'].values
-
-# Keep unscaled test data for sample-level analysis
-X_train_raw, X_test_orig, y_train_raw, y_test = train_test_split(
-    X_all, y_all, test_size=0.20, random_state=42, stratify=y_all
-)
-
-ros = RandomOverSampler(random_state=42)
-X_train_res, y_train_res = ros.fit_resample(X_train_raw, y_train_raw)
-
-scaler     = MinMaxScaler()
-X_train_sc = scaler.fit_transform(X_train_res)
-X_test_sc  = scaler.transform(X_test_orig)
+data        = build_pipeline()
+X_train_raw = data.X_train_raw
+y_train_raw = data.y_train_raw
+X_train_res = data.X_train_res
+y_train_res = data.y_train_res
+X_train_sc  = data.X_train_sc
+X_test_orig = data.X_test_raw
+X_test_sc   = data.X_test_sc
+y_test      = data.y_test
+N_FEAT      = len(ENG_FEATURES)
 
 # --- Compute class-level means (from unscaled training data, for clinical ref) ---
 train_df = pd.DataFrame(X_train_raw, columns=ENG_FEATURES)

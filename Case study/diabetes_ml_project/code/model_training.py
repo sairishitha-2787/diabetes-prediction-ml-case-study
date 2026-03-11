@@ -33,6 +33,7 @@ from sklearn.metrics           import (
     classification_report, roc_curve
 )
 from imblearn.over_sampling    import RandomOverSampler
+from preprocessing             import build_pipeline, COLUMN_NAMES, ZERO_COLS, ENG_FEATURES
 
 warnings.filterwarnings('ignore')
 np.random.seed(42)
@@ -47,75 +48,29 @@ print("Using MEDIAN imputation (Winner from preprocessing experiment)")
 print("=" * 70)
 
 # ------------------------------------------------------------------
-# 1-A  Load raw data
+# 1-A  Run shared preprocessing pipeline
 # ------------------------------------------------------------------
-COLUMN_NAMES = [
-    'Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness',
-    'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age', 'Outcome'
-]
-URL = ("https://raw.githubusercontent.com/jbrownlee/Datasets/"
-       "master/pima-indians-diabetes.data.csv")
-df = pd.read_csv(URL, names=COLUMN_NAMES)
-print(f"\n  Raw dataset loaded : {df.shape[0]} rows x {df.shape[1]} cols")
+data        = build_pipeline()
+df          = data.df
+X_train_raw = data.X_train_raw
+y_train_raw = data.y_train_raw
+X_train_res = data.X_train_res
+y_train_res = data.y_train_res
+X_train_sc  = data.X_train_sc
+X_test      = data.X_test_raw
+X_test_sc   = data.X_test_sc
+y_test      = data.y_test
+scaler      = data.scaler
 
-# ------------------------------------------------------------------
-# 1-B  Replace biologically-impossible zeros with NaN
-# ------------------------------------------------------------------
-ZERO_COLS = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
-df[ZERO_COLS] = df[ZERO_COLS].replace(0, np.nan)
-
-# ------------------------------------------------------------------
-# 1-C  Median imputation (robust to outliers — proved best in experiment)
-# ------------------------------------------------------------------
-imputer = SimpleImputer(strategy='median')
-df[ZERO_COLS] = imputer.fit_transform(df[ZERO_COLS])
+print(f"\n  Raw dataset loaded : {data.df_raw.shape[0]} rows x {data.df_raw.shape[1]} cols")
 print("  Median imputation  : applied to", ZERO_COLS)
-
-# ------------------------------------------------------------------
-# 1-D  Feature engineering
-#   Glucose_BMI_Interaction : product of the top-2 correlated features
-#   Age_Group               : clinical buckets (young/middle/senior/elderly)
-# ------------------------------------------------------------------
-df['Glucose_BMI_Interaction'] = df['Glucose'] * df['BMI']
-df['Age_Group'] = pd.cut(
-    df['Age'],
-    bins=[0, 30, 45, 60, 120],
-    labels=[0, 1, 2, 3]
-).astype(int)
 print("  Feature engineering: Glucose_BMI_Interaction, Age_Group added")
-
-# ------------------------------------------------------------------
-# 1-E  Train / test split (stratified)
-# ------------------------------------------------------------------
-ORIG_FEATURES = [c for c in COLUMN_NAMES if c != 'Outcome']
-ENG_FEATURES  = ORIG_FEATURES + ['Glucose_BMI_Interaction', 'Age_Group']
-
-X = df[ENG_FEATURES].values
-y = df['Outcome'].values
-
-X_train_raw, X_test, y_train_raw, y_test = train_test_split(
-    X, y, test_size=0.20, random_state=42, stratify=y
-)
 print(f"\n  Train samples (raw)     : {len(X_train_raw)}"
       f"  (Non-diab={sum(y_train_raw==0)}, Diab={sum(y_train_raw==1)})")
 print(f"  Test  samples           : {len(X_test)}"
       f"  (Non-diab={sum(y_test==0)}, Diab={sum(y_test==1)})")
-
-# ------------------------------------------------------------------
-# 1-F  Random oversampling on training set only
-#      (prevents data leakage into the test set)
-# ------------------------------------------------------------------
-ros = RandomOverSampler(random_state=42)
-X_train_res, y_train_res = ros.fit_resample(X_train_raw, y_train_raw)
 print(f"  Train samples (balanced): {len(X_train_res)}"
       f"  (Non-diab={sum(y_train_res==0)}, Diab={sum(y_train_res==1)})")
-
-# ------------------------------------------------------------------
-# 1-G  MinMaxScaler (fit on balanced training set only)
-# ------------------------------------------------------------------
-scaler     = MinMaxScaler()
-X_train_sc = scaler.fit_transform(X_train_res)
-X_test_sc  = scaler.transform(X_test)
 print("  Scaling                 : MinMaxScaler applied")
 print(f"  Final feature count     : {X_train_sc.shape[1]}"
       " (8 original + 2 engineered)")
